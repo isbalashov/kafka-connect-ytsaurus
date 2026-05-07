@@ -27,7 +27,6 @@ import tech.ytsaurus.client.ApiServiceTransaction;
 import tech.ytsaurus.client.YTsaurusClient;
 import tech.ytsaurus.client.YTsaurusClientConfig;
 import tech.ytsaurus.client.request.StartTransaction;
-import tech.ytsaurus.client.rpc.HostPort;
 import tech.ytsaurus.ysontree.YTree;
 import tech.ytsaurus.ysontree.YTreeNode;
 
@@ -48,16 +47,14 @@ public abstract class BaseTableWriter {
 
   protected BaseTableWriter(BaseTableWriterConfig config, BaseOffsetsManager offsetsManager) {
     this.config = config;
-    var ytClientBuilder = YTsaurusClient.builder()
+    this.client = YTsaurusClient.builder()
         .setConfig(YTsaurusClientConfig.builder()
-            .setTvmOnly(config.getAuthType().equals(AuthType.SERVICE_TICKET)).build())
-        .setAuth(config.getYtClientAuth());
-    if (config.getUseHosts()) {
-      ytClientBuilder.setCluster(config.getYtCluster());
-    } else {
-      ytClientBuilder.setRpcProxyAddresses(List.of(HostPort.parse(config.getYtCluster())));
-    }
-    this.client = ytClientBuilder.build();
+            .setTvmOnly(config.getAuthType().equals(AuthType.SERVICE_TICKET))
+            .setIgnoreBalancers(!config.getUseHosts())
+            .build())
+        .setCluster(config.getYtCluster())
+        .setAuth(config.getYtClientAuth())
+        .build();
     this.offsetsManager = offsetsManager;
   }
 
