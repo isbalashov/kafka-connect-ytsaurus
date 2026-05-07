@@ -1,17 +1,17 @@
 # Kafka Connect YTsaurus Sink Connector
 
-Kafka Connect YTsaurus Sink Connector is a [Kafka Connect](https://docs.confluent.io/platform/current/connect/index.html) plugin for writing data from Kafka topics to static or ordered dynamic tables in [YTsaurus](https://github.com/ytsaurus/ytsaurus).
+Kafka Connect YTsaurus Sink Connector is a [Kafka Connect](https://docs.confluent.io/platform/current/connect/index.html) plugin for writing data from Kafka topics to static or ordered dynamic tables in [YTsaurus](https://ytsaurus.tech/).
 
 
 ## Features
 
 - **Guaranteed exactly-once delivery**
 
-    Apache Kafka topic offsets are saved in YTsaurus, ensuring *at-most-once* delivery. Kafka Connect provides *at-least-once* delivery, and together, they achieve *exactly-once* delivery guarantee.
+    Apache Kafka topic offsets are saved in YTsaurus, ensuring *at-most-once* delivery. Kafka Connect provides *at-least-once* delivery, and together, they achieve *exactly-once* delivery guarantees.
 
 - **Support for static and dynamic tables**
 
-    Data can be written to [static](https://ytsaurus.tech/docs/en/user-guide/storage/static-tables) or [ordered dynamic](https://ytsaurus.tech/docs/en/user-guide/dynamic-tables/ordered-dynamic-tables) tables, as defined by the `yt.sink.output.type` [configuration property](#configuration-properties).
+    Data can be written to [static](https://ytsaurus.tech/docs/en/user-guide/storage/static-tables) or [ordered dynamic](https://ytsaurus.tech/docs/en/user-guide/dynamic-tables/ordered-dynamic-tables) tables in YTsaurus.
 
 - **Configurable output formats and schema types**
 
@@ -44,7 +44,7 @@ The Kafka Connect cluster must utilize Java 11 or higher.
    cp <path_to_your_jar_file> /usr/share/java/kafka/
    ```
 
-2. Create a connector using the Kafka Connect REST interface ([API documentation](https://docs.confluent.io/platform/current/connect/references/restapi.html)) and include the following configuration:
+2. Create a connector using the Kafka Connect REST interface ([API documentation](https://docs.confluent.io/platform/current/connect/references/restapi.html)) and include the following configuration property:
 
    ```
    "connector.class": "ru.dzen.kafka.connect.ytsaurus.YtTableSinkConnector"
@@ -64,7 +64,7 @@ Coming soon
 
 <!-- - From Maven:
 
-  Download the `ru.dzen.kafka.connect.ytsaurus` JAR file from Maven using the command line with `wget` or `curl`. Replace `<version>` with the desired version number and `<filename>` with the appropriate JAR filename:
+  Download the `ru.dzen.kafka.connect.ytsaurus` JAR file from Maven using the command line with `wget` or `curl`. Replace `<version>` with the desired version number and `<filename>` with the appropriate filename:
 
   - wget:
   
@@ -146,6 +146,7 @@ For a more comprehensive introduction, follow the [Quick Start Guide](quickstart
 | `yt.connection.user` | Username for the YT API authentication | string | - | HIGH | yes |
 | `yt.connection.token` | Access token for the YT API authentication | password | - | HIGH | yes | 
 | `yt.connection.cluster` | Identifier of the YT cluster to connect to | string | - | HIGH | yes | 
+| `yt.connection.use.hosts` | Whether to use balancer/proxy discovery. Set to `false` to connect directly to the cluster host, bypassing proxy discovery (equivalent to `YT_USE_HOSTS=0` in the YTsaurus CLI) | boolean | `true` | LOW | no |
 | `yt.sink.output.type` | Specifies the output type ('dynamic_table' or 'static_tables') | string | 'dynamic_table' | HIGH | no | 
 | `yt.sink.output.key.format` | Determines the output format for keys ('string' or 'any') | string | 'any' | HIGH | no | 
 | `yt.sink.output.value.format` | Determines the output format for values ('string' or 'any') | string | 'any' | HIGH | no | 
@@ -169,16 +170,16 @@ For a more comprehensive introduction, follow the [Quick Start Guide](quickstart
 | `yt.sink.static.rotation.period` | Rotation period | string | - | HIGH | yes |
 | `yt.sink.static.tables.dir.postfix` | The name of the static tables subdirectory in the output directory | string | 'output' | MEDIUM | no |
 | `yt.sink.static.compression.codec` | Compression codec of the output tables | string | zstd | MEDIUM | no |
-| `yt.sink.static.tables.optimize.for` | Specifies the storage optimization strategy for the table. Choose 'lookup' for row-based table storage optimized for point lookups, or 'scan' for column-based table storage optimized for scans and aggregations. | string | lookup | MEDIUM | no |
+| `yt.sink.static.tables.optimize.for` | Specifies the storage optimization strategy for the table. Choose 'lookup' for row-based table storage optimized for point lookups, or 'scan' for column-based storage optimized for range scans | string | 'lookup' | MEDIUM | no |
 | `yt.sink.static.tables.replication.factor` | The replication factor of the output tables | int | - | MEDIUM | no |
 | `yt.sink.static.tables.erasure.codec` | Erasure coding codec of the output tables | string | - | MEDIUM | no |
 | `yt.sink.static.merge.chunks` | Activate the consolidation of chunks during the table rotation process | boolean | false | MEDIUM | no |
 | `yt.sink.static.merge.data.size.per.job` | Maximum size of data to be merged per job in MB. | int | 100 | MEDIUM | no |
-| `yt.sink.static.schema.inference.strategy` | The strategy for inferring the schema of the output tables. Valid options are DISABLED, INFER_FROM_FIRST_BATCH, and INFER_FROM_FINALIZED_TABLE. Schema inference strategy could be used only with STRICT output table schema type. <br><br>DISABLED means that the schema will not be inferred at all, and the output tables will have a weak schema that only includes the column names. <br><br>INFER_FROM_FIRST_BATCH means that the table schema will be created from the first batch of data, and will not change after the table is created. <br><br>INFER_FROM_FINALIZED_TABLE means that the weak schema will be used during the writing of rows, and after rotation, the finalized table will be re-merged with the schema based on all rows of the table. If using INFER_FROM_FINALIZED_TABLE, chunks will be merged. | string | DISABLED | HIGH | no |
+| `yt.sink.static.schema.inference.strategy` | The strategy for inferring the schema of the output tables. Valid options are DISABLED, INFER_FROM_FIRST_BATCH, and INFER_FROM_FINALIZED_TABLE. Schema inference is only supported for static tables. | string | 'DISABLED' | MEDIUM | no |
 
 <!-- > **Warning**
 >
-> The connector has `chunk_merger_mode` set to 'auto' for YTsaurus output folders in order to enhance writing efficiency. To make the optimization work, it is necessary to activate the *chunk_merger* functionality on YTsaurus side. -->
+> The connector has `chunk_merger_mode` set to 'auto' for YTsaurus output folders in order to enhance writing efficiency. To make the optimization work, it is necessary to activate the *chunk_merger* on the YTsaurus cluster. -->
 
 ## Todo
 
@@ -194,7 +195,7 @@ If you encounter issues while using this repository, follow the steps below to t
 
 1. Check the README and documentation.
 
-    Ensure you have followed the instructions provided in the current README, the [Kafka Connect YTsaurus Full Example](examples/full/readme.md), the [Quick Start Guide](quickstart.md), or other relevant documentation.
+    Ensure you have followed the instructions provided in the current README, the [Kafka Connect YTsaurus Full Example](examples/full/readme.md), the [Quick Start Guide](quickstart.md), or other available documentation.
 
 2. Search for existing issues.
 
