@@ -20,6 +20,7 @@ public class BaseTableWriterConfig extends AbstractConfig {
   public static final String YT_TOKEN = "yt.connection.token";
   public static final String SERVICE_TICKET_PROVIDER_URL = "yt.connection.service.ticket.provider.url";
   public static final String YT_CLUSTER = "yt.connection.cluster";
+  public static final String YT_USE_HOSTS = "yt.connection.use.hosts";
   public static final String OUTPUT_TYPE = "yt.sink.output.type";
   public static final String OUTPUT_TABLE_SCHEMA_TYPE = "yt.sink.output.table.schema.type";
   public static final String KEY_OUTPUT_FORMAT = "yt.sink.output.key.format";
@@ -41,6 +42,8 @@ public class BaseTableWriterConfig extends AbstractConfig {
           "URL of the service ticket provider, required if 'yt.connection.auth.type' is 'SERVICE_TICKET'")
       .define(YT_CLUSTER, ConfigDef.Type.STRING, ConfigDef.Importance.HIGH,
           "Identifier of the YT cluster to connect to")
+      .define(YT_USE_HOSTS, ConfigDef.Type.BOOLEAN, true, ConfigDef.Importance.LOW,
+          "Whether to use balancer/proxy discovery. Set to false to connect directly to the cluster host (equivalent to YT_USE_HOSTS=0 in the YTsaurus CLI)")
       .define(OUTPUT_TYPE, ConfigDef.Type.STRING, OutputType.DYNAMIC_TABLE.name(),
           ValidUpperString.in(OutputType.DYNAMIC_TABLE.name(),
               OutputType.STATIC_TABLES.name()),
@@ -96,6 +99,10 @@ public class BaseTableWriterConfig extends AbstractConfig {
 
   public String getYtCluster() {
     return getString(YT_CLUSTER);
+  }
+
+  public boolean getUseHosts() {
+    return getBoolean(YT_USE_HOSTS);
   }
 
   public OutputType getOutputType() {
