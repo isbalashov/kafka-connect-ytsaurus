@@ -16,7 +16,7 @@ import ru.dzen.kafka.connect.ytsaurus.common.Util;
 import ru.dzen.kafka.connect.ytsaurus.staticTables.StaticTableWriterConfig.SchemaInferenceStrategy;
 import tech.ytsaurus.client.operations.MergeSpec;
 import tech.ytsaurus.client.operations.OperationStatus;
-import tech.ytsaurus.client.request.ColumnFilter;
+import java.util.List;
 import tech.ytsaurus.client.request.CreateNode;
 import tech.ytsaurus.client.request.ListNode;
 import tech.ytsaurus.client.request.LockNode;
@@ -53,7 +53,7 @@ public class StaticTableWriterManager extends StaticTableWriter implements Table
           var allTables = trx.listNode(
                   ListNode.builder()
                       .setPath(config.getOutputTablesDirectory())
-                      .setAttributes(ColumnFilter.of("final"))
+                      .setAttributes(List.of("final"))
                       .build())
               .get().asList();
           for (var table : allTables) {

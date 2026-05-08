@@ -146,6 +146,7 @@ For a more comprehensive introduction, follow the [Quick Start Guide](quickstart
 | `yt.connection.user` | Username for the YT API authentication | string | - | HIGH | yes |
 | `yt.connection.token` | Access token for the YT API authentication | password | - | HIGH | yes | 
 | `yt.connection.cluster` | Identifier of the YT cluster to connect to | string | - | HIGH | yes | 
+| `yt.connection.use.hosts` | Whether to use balancer/proxy discovery. Set to `false` to connect directly to the cluster host, bypassing proxy discovery (equivalent to `YT_USE_HOSTS=0` in the YTsaurus CLI) | boolean | `true` | LOW | no |
 | `yt.sink.output.type` | Specifies the output type ('dynamic_table' or 'static_tables') | string | 'dynamic_table' | HIGH | no | 
 | `yt.sink.output.key.format` | Determines the output format for keys ('string' or 'any') | string | 'any' | HIGH | no | 
 | `yt.sink.output.value.format` | Determines the output format for values ('string' or 'any') | string | 'any' | HIGH | no | 

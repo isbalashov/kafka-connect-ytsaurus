@@ -49,8 +49,12 @@ public abstract class BaseTableWriter {
     this.config = config;
     this.client = YTsaurusClient.builder()
         .setConfig(YTsaurusClientConfig.builder()
-            .setTvmOnly(config.getAuthType().equals(AuthType.SERVICE_TICKET)).build())
-        .setCluster(config.getYtCluster()).setAuth(config.getYtClientAuth()).build();
+            .setTvmOnly(config.getAuthType().equals(AuthType.SERVICE_TICKET))
+            .setIgnoreBalancers(!config.getUseHosts())
+            .build())
+        .setCluster(config.getYtCluster())
+        .setAuth(config.getYtClientAuth())
+        .build();
     this.offsetsManager = offsetsManager;
   }
 
